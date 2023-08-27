@@ -14,7 +14,6 @@
             <field name="presence_penalty">0</field>
             <field name="top_p">1</field>
             <field name="prompt_template_id" ref="completion_product_description_template"/>
-
         </record>
     </data>
 </odoo>

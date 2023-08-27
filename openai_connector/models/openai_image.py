@@ -62,6 +62,8 @@ class OpenAiImage(models.Model):
 
     def create_image(self, rec_id, method=False):
         prompt = self.get_prompt(rec_id)
+        if not prompt:
+            return
         res = self.run_image_method(prompt, rec_id, method)
         if not res:
             return
@@ -72,7 +74,7 @@ class OpenAiImage(models.Model):
             if data.get('b64_json'):
                 result_id = self.create_result(rec_id, prompt, data.get('b64_json'), method=method)
             else:
-                result_id = self.create_result_from_url(rec_id, prompt, data['url'], method=method)
+                result_id = self.create_result_from_url(rec_id, prompt, data['url'])
             result_ids.append(result_id)
         return result_ids
 

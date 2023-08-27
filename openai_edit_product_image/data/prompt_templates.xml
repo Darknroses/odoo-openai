@@ -3,10 +3,10 @@
     <data noupdate="0">
         <template id="edit_product_image_template">
 <t t-if="object.image_description">
-    <t t-out="object.image_description"/>
+    <t t-raw="object.image_description"/>
 </t>
 <t t-else="">
-    <t t-out="object.name"/> in a stylish setting
+    <t t-raw="object.name"/> in a stylish setting
 </t>
         </template>
     </data>

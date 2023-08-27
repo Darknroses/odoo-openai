@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <template id="assets_backend" inherit_id="web.assets_backend" name="openai Backend Assets">
+            <xpath expr="//link[last()]" position="after">
+                <link rel="stylesheet" type="text/scss" href="/openai_connector/static/src/scss/style.scss" />
+            </xpath>
+        </template>
+    </data>
+</odoo>

@@ -55,7 +55,6 @@
                         html2plaintext : Convert html to text
                     </div>
 
-
                     <group name="tests" col="1">
                         <button name="run_test_prompt" type="object"
                                 string="Test Prompt" class="btn btn-primary btn-center" icon="fa-terminal"/>

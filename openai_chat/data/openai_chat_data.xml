@@ -13,7 +13,7 @@
             <field name="login">ai</field>
             <field name="partner_id" ref="openai_chat.partner_ai"/>
             <field name="company_id" ref="base.main_company"/>
-            <field name="company_ids" eval="[Command.link(ref('base.main_company'))]"/>
+            <field name="company_ids" eval="[(4, ref('base.main_company'))]"/>
             <field name="signature"><![CDATA[<span>-- <br/>
 AI</span>]]></field>
             <field name="active" eval="False"/>

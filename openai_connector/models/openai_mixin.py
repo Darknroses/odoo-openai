@@ -9,6 +9,7 @@ from odoo.addons.base.models.ir_model import SAFE_EVAL_BASE
 from odoo.tools import html2plaintext
 import logging
 import openai
+from lxml import html
 
 _logger = logging.getLogger(__name__)
 
@@ -43,11 +44,11 @@ class OpenAiMixin(models.AbstractModel):
         if answer_lang_id:
             context['answer_lang'] = answer_lang_id.name
         if self.prompt_template_id:
-            prompt = self._render_template_qweb_view(self.prompt_template_id.xml_id, self.model_id.model, [rec_id],
-                                                     add_context=context)
+            prompt = self._render_template_qweb(
+                self.prompt_template_id.xml_id, self.model_id.model, [rec_id], add_context=context)
         elif self.prompt_template:
-            prompt = self._render_template_qweb(self.prompt_template, self.model_id.model, [rec_id],
-                                                add_context=context)
+            prompt = self._render_template_qweb_raw(
+                self.prompt_template, self.model_id.model, [rec_id], add_context=context)
         else:
             raise UserError(_('A prompt template is required'))
 
@@ -80,3 +81,50 @@ class OpenAiMixin(models.AbstractModel):
         if not rec_id:
             return
         self.test_prompt = self.get_prompt(rec_id)
+
+
+class MailRenderMixin(models.AbstractModel):
+    _inherit = 'mail.render.mixin'
+
+    @api.model
+    def _render_template_qweb_raw(self, template_src, model, res_ids, add_context=None, options=None):
+        """ Render a raw QWeb template.
+
+        :param str template_src: raw QWeb template to render;
+        :param str model: see ``MailRenderMixin._render_template()``;
+        :param list res_ids: see ``MailRenderMixin._render_template()``;
+
+        :param dict add_context: additional context to give to renderer. It
+          allows to add or update values to base rendering context generated
+          by ``MailRenderMixin._render_eval_context()``;
+        :param dict options: options for rendering (not used currently);
+
+        :return dict: {res_id: string of rendered template based on record}
+
+        :notice: Experimental. Use at your own risks only.
+        """
+        results = dict.fromkeys(res_ids, u"")
+        if not template_src:
+            return results
+
+        # prepare template variables
+        variables = self._render_qweb_eval_context()
+        if add_context:
+            variables.update(**add_context)
+
+        for record in self.env[model].browse(res_ids):
+            variables['object'] = record
+            try:
+                render_result = self.env['ir.qweb']._render(
+                    html.fragment_fromstring(template_src, create_parent='div'),
+                    variables,
+                    **(options or {})
+                )
+                # remove the rendered tag <div> that was added in order to wrap potentially multiples nodes into one.
+                render_result = render_result[5:-6]
+            except Exception as e:
+                _logger.info("Failed to render template : %s", template_src, exc_info=True)
+                raise UserError(_("Failed to render QWeb template : %s)", template_src)) from e
+            results[record.id] = render_result
+
+        return results
