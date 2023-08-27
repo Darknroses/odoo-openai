@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 from odoo import models, _
-from odoo.tools import plaintext2html, html2plaintext
+from odoo.tools import html2plaintext
 import logging
 import openai
 
@@ -15,7 +15,7 @@ class MailBot(models.AbstractModel):
     _description = 'Mail AI Bot'
 
     def _answer_to_message(self, record, values):
-        ai_bot_id = self.env['ir.model.data']._xmlid_to_res_id('openai_chat.partner_ai')
+        ai_bot_id = self.env['ir.model.data'].xmlid_to_res_id('openai_chat.partner_ai')
         if len(record) != 1 or values.get('author_id') == ai_bot_id or values.get('message_type') != 'comment':
             return
         if self._is_bot_in_private_channel(record):
@@ -35,7 +35,7 @@ class MailBot(models.AbstractModel):
                     pass
             if answer:
                 message_type = 'comment'
-                subtype_id = self.env['ir.model.data']._xmlid_to_res_id('mail.mt_comment')
+                subtype_id = self.env['ir.model.data'].xmlid_to_res_id('mail.mt_comment')
                 record = record.with_context(mail_create_nosubscribe=True).sudo()
                 record.message_post(body=answer, author_id=ai_bot_id, message_type=message_type, subtype_id=subtype_id)
 
@@ -68,7 +68,7 @@ class MailBot(models.AbstractModel):
             return res[0]
 
     def _is_bot_in_private_channel(self, record):
-        ai_bot_id = self.env['ir.model.data']._xmlid_to_res_id('openai_chat.partner_ai')
+        ai_bot_id = self.env['ir.model.data'].xmlid_to_res_id('openai_chat.partner_ai')
         if record._name == 'mail.channel' and record.channel_type == 'chat':
             return ai_bot_id in record.with_context(active_test=False).channel_partner_ids.ids
         return False
